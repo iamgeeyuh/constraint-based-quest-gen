@@ -23,6 +23,23 @@ MIN_MAIN_STEPS = 2
 MAX_TASKS_PER_NODE = 2
 SIDE_QUEST_CHANCE = 0.7
 DECISION_FORK_CHANCE = 0.3
+DIFFICULTY = 1
+
+if DIFFICULTY == 1:  
+    MIN_MAIN_STEPS = 2
+    MAX_MAIN_STEPS = 3
+    SIDE_QUEST_CHANCE = 0.4
+    DECISION_FORK_CHANCE = 0.1
+elif DIFFICULTY == 2:  
+    MIN_MAIN_STEPS = 3
+    MAX_MAIN_STEPS = 5
+    SIDE_QUEST_CHANCE = 0.6
+    DECISION_FORK_CHANCE = 0.3
+else: 
+    MIN_MAIN_STEPS = 4
+    MAX_MAIN_STEPS = 6
+    SIDE_QUEST_CHANCE = 0.8
+    DECISION_FORK_CHANCE = 0.5
 
 # -----------------------------
 # Quest Tile Definitions
@@ -269,6 +286,13 @@ Quest Skeleton:
 - Step(s): {', '.join(skeleton['steps'])}
 - Completion: {skeleton['completion']}
 
+Quest Difficulty Level: {DIFFICULTY} (1 = easy, 2 = medium, 3 = hard)
+
+Guidelines:
+- If Difficulty 1 (Easy): Objectives should be simple and quick (ex: battle any wild Pokémon, deliver a common item, talk to an NPC).
+- If Difficulty 2 (Medium): Objectives can require some exploration or minor battles (ex: catch a semi-common Pokémon, battle a few trainers).
+- If Difficulty 3 (Hard): Objectives should be more challenging (ex: catch rare Pokémon, defeat stronger trainers, find hidden items).
+
 Write character dialogue in Pokémon NPC style:
 1. Initial greeting and request
 2. In-quest encouragement (optional)
@@ -287,7 +311,6 @@ Output only the NPC’s lines.
 
 The player returns to the same NPC after each step is completed to receive the next task. Dialogue should flow as a single narrative from the same character.
 
-
 Trainer Context:
 - Location: Route 32
 - Time: Day
@@ -297,6 +320,13 @@ Trainer Context:
 
 Quest Step #{idx + 1}:
 Actions the player must complete: {', '.join(actions)}
+
+Quest Difficulty Level: {DIFFICULTY} (1 = easy, 2 = medium, 3 = hard)
+
+Guidelines:
+- If Difficulty 1 (Easy): Objectives should be simple and quick (ex: battle any wild Pokémon, deliver a common item, talk to an NPC).
+- If Difficulty 2 (Medium): Objectives can require some exploration or minor battles (ex: catch a semi-common Pokémon, battle a few trainers).
+- If Difficulty 3 (Hard): Objectives should be more challenging (ex: catch rare Pokémon, defeat stronger trainers, find hidden items).
 
 Write only the dialogue for this one step (as if the player has just returned from the previous one).
 1. Initial request
