@@ -1,50 +1,50 @@
-Game,Location,Method,Time,Pokemon,Level(s),Encounter Rate
-Gen II,Grass,Walking,Any,Rattata,4–6,30%
-Gen II,Grass,Walking,Any,Bellsprout,6,30%
-Gen II,Grass,Walking,Any,Zubat,4,10%
-Gen II,Grass,Walking,Day,Hoppip,6,10%
-Gen II,Grass,Walking,Night,Wooper,6,35%
-Gen II,Grass,Walking,Any (Silver/Crystal),Ekans,4,30%
-Gen II,Water,Surfing,Any,Tentacool,15–19,60%
-Gen II,Water,Surfing,Any,Quagsire,20–24,30%
-Gen II,Water,Surfing,Any,Tentacruel,20–24,10%
-Gen II,Water,Fishing (Old Rod),Any,Magikarp,10,85%
-Gen II,Water,Fishing (Old Rod),Any,Tentacool,10,15%
-Gen II,Water,Fishing (Good Rod),Any,Tentacool,20,65%
-Gen II,Water,Fishing (Good Rod),Any,Magikarp,20,35%
-Gen II,Water,Fishing (Super Rod),Any,Tentacool,40,70%
-Gen II,Water,Fishing (Super Rod),Any,Magikarp,40,20%
-Gen II,Water,Fishing (Super Rod),Any,Qwilfish,40,10%
-Gen II,Trees,Headbutt Normal,Any,Spearow,10,50%
-Gen II,Trees,Headbutt Normal,Any,Heracross,10,30%
-Gen II,Trees,Headbutt Normal,Any,Aipom,10,20%
-Gen II,Trees,Headbutt Special,Any,Spearow,10,80%
-Gen II,Trees,Headbutt Special,Any,Aipom,10,20%
-Gen IV,Grass,Walking,Morning,Rattata,4–6,35%
-Gen IV,Grass,Walking,Morning,Bellsprout,6,30%
-Gen IV,Grass,Walking,Morning,Mareep,6,20%
-Gen IV,Grass,Walking,Morning,Hoppip,6,10%
-Gen IV,Grass,Walking,Morning,Zubat,4,5%
-Gen IV,Grass,Walking,Day,Rattata,4–6,40%
-Gen IV,Grass,Walking,Day,Bellsprout,6,30%
-Gen IV,Grass,Walking,Day,Mareep,6,20%
-Gen IV,Grass,Walking,Day,Hoppip,6,10%
-Gen IV,Grass,Walking,Night,Wooper,6,35%
-Gen IV,Grass,Walking,Night,Rattata,4,30%
-Gen IV,Grass,Walking,Night,Bellsprout,6,20%
-Gen IV,Grass,Walking,Night,Mareep,6,10%
-Gen IV,Grass,Walking,Night,Zubat,4,5%
-Gen IV,Water,Surfing,Any,Tentacool,10–20,60%
-Gen IV,Water,Surfing,Any,Quagsire,15–25,30%
-Gen IV,Water,Surfing,Any,Tentacruel,15–36,10%
-Gen IV,Water,Fishing (Old Rod),Any,Magikarp,10,95%
-Gen IV,Water,Fishing (Old Rod),Any,Tentacool,10,5%
-Gen IV,Water,Fishing (Good Rod),Any,Magikarp,20,60%
-Gen IV,Water,Fishing (Good Rod),Any,Tentacool,20,38%
-Gen IV,Water,Fishing (Good Rod),Any,Qwilfish,20,2%
-Gen IV,Water,Fishing (Super Rod),Any,Tentacool,40,90%
-Gen IV,Water,Fishing (Super Rod),Any,Magikarp,40,7%
-Gen IV,Water,Fishing (Super Rod),Any,Qwilfish,40,3%
-Gen IV,Trees,Headbutt,Any,Exeggcute,2–25,Varies
-Gen IV,Trees,Headbutt,Any,Hoothoot,2–19,Varies
-Gen IV,Trees,Headbutt,Any,Pineco,2–17,Varies
+Game,Location,Method,Time,Pokemon,Level(s),Encounter Rate,Catch Rate,Total Base Stats
+Gen II,Grass,Walking,Any,Rattata,4–6,30%,255,253
+Gen II,Grass,Walking,Any,Bellsprout,6,30%,255,300
+Gen II,Grass,Walking,Any,Zubat,4,10%,255,245
+Gen II,Grass,Walking,Day,Hoppip,6,10%,255,250
+Gen II,Grass,Walking,Night,Wooper,6,35%,255,210
+Gen II,Grass,Walking,Any (Silver/Crystal),Ekans,4,30%,255,288
+Gen II,Water,Surfing,Any,Tentacool,15–19,60%,190,335
+Gen II,Water,Surfing,Any,Quagsire,20–24,30%,90,430
+Gen II,Water,Surfing,Any,Tentacruel,20–24,10%,60,515
+Gen II,Water,Fishing (Old Rod),Any,Magikarp,10,85%,255,200
+Gen II,Water,Fishing (Old Rod),Any,Tentacool,10,15%,190,335
+Gen II,Water,Fishing (Good Rod),Any,Tentacool,20,65%,190,335
+Gen II,Water,Fishing (Good Rod),Any,Magikarp,20,35%,255,200
+Gen II,Water,Fishing (Super Rod),Any,Tentacool,40,70%,190,335
+Gen II,Water,Fishing (Super Rod),Any,Magikarp,40,20%,255,200
+Gen II,Water,Fishing (Super Rod),Any,Qwilfish,40,10%,45,440
+Gen II,Trees,Headbutt Normal,Any,Spearow,10,50%,255,262
+Gen II,Trees,Headbutt Normal,Any,Heracross,10,30%,45,500
+Gen II,Trees,Headbutt Normal,Any,Aipom,10,20%,45,360
+Gen II,Trees,Headbutt Special,Any,Spearow,10,80%,255,262
+Gen II,Trees,Headbutt Special,Any,Aipom,10,20%,45,360
+Gen IV,Grass,Walking,Morning,Rattata,4–6,35%,255,253
+Gen IV,Grass,Walking,Morning,Bellsprout,6,30%,255,300
+Gen IV,Grass,Walking,Morning,Mareep,6,20%,235,280
+Gen IV,Grass,Walking,Morning,Hoppip,6,10%,255,250
+Gen IV,Grass,Walking,Morning,Zubat,4,5%,255,245
+Gen IV,Grass,Walking,Day,Rattata,4–6,40%,255,253
+Gen IV,Grass,Walking,Day,Bellsprout,6,30%,255,300
+Gen IV,Grass,Walking,Day,Mareep,6,20%,235,280
+Gen IV,Grass,Walking,Day,Hoppip,6,10%,255,250
+Gen IV,Grass,Walking,Night,Wooper,6,35%,255,210
+Gen IV,Grass,Walking,Night,Rattata,4,30%,255,253
+Gen IV,Grass,Walking,Night,Bellsprout,6,20%,255,300
+Gen IV,Grass,Walking,Night,Mareep,6,10%,235,280
+Gen IV,Grass,Walking,Night,Zubat,4,5%,255,245
+Gen IV,Water,Surfing,Any,Tentacool,10–20,60%,190,335
+Gen IV,Water,Surfing,Any,Quagsire,15–25,30%,90,430
+Gen IV,Water,Surfing,Any,Tentacruel,15–36,10%,60,515
+Gen IV,Water,Fishing (Old Rod),Any,Magikarp,10,95%,255,200
+Gen IV,Water,Fishing (Old Rod),Any,Tentacool,10,5%,190,335
+Gen IV,Water,Fishing (Good Rod),Any,Magikarp,20,60%,255,200
+Gen IV,Water,Fishing (Good Rod),Any,Tentacool,20,38%,190,335
+Gen IV,Water,Fishing (Good Rod),Any,Qwilfish,20,2%,45,440
+Gen IV,Water,Fishing (Super Rod),Any,Tentacool,40,90%,190,335
+Gen IV,Water,Fishing (Super Rod),Any,Magikarp,40,7%,255,200
+Gen IV,Water,Fishing (Super Rod),Any,Qwilfish,40,3%,45,440
+Gen IV,Trees,Headbutt,Any,Exeggcute,2–25,Varies,90,325
+Gen IV,Trees,Headbutt,Any,Hoothoot,2–19,Varies,255,262
+Gen IV,Trees,Headbutt,Any,Pineco,2–17,Varies,190,290
