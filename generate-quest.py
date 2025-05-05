@@ -16,11 +16,13 @@ MIN_MAIN_STEPS = MAX_MAIN_STEPS = SIDE_QUEST_CHANCE = DECISION_FORK_CHANCE = Non
 MAX_TASKS_PER_NODE = 2
 
 QDS_WEIGHTS = {
-    'difficulty': 0.4,      # v - Base difficulty setting
-    'pokemon': 0.2,         # w - Number of Pokémon involved
-    'steps': 0.15,          # x - Number of quest steps
-    'battles': 0.15,        # y - Battle strength (sum of levels)
-    'conditions': 0.1       # z - Special conditions (optional steps, etc)
+    'difficulty': 0.3,      # v - Base difficulty setting
+    'pokemon':    0.15,     # w - Number of Pokémon involved
+    'steps':      0.1,      # x - Number of quest steps
+    'battles':    0.1,      # y - Battle strength (sum of levels)
+    'conditions': 0.05,     # z - Special conditions (optional steps, etc)
+    'catch_rate': 0.15,     # new – average (1 – catch_rate)
+    'base_stats': 0.15      # new – average base stats normalized
 }
 
 def configure_difficulty(difficulty: int):
@@ -195,10 +197,20 @@ def load_route_data(enc_csv, tr_csv):
     day = enc[enc["Time"] == "Day"]
     wild = []
     for _, r in day.iterrows():
+        # normalize catch rate: if it’s a string with “%”, strip it;
+        # otherwise assume it’s the classic 0–255 catch value and divide by 255.
+        cr = r["Catch Rate"]
+        if isinstance(cr, str) and cr.endswith("%"):
+            catch_rate = float(cr.strip("%")) / 100
+        else:
+            catch_rate = float(cr) / 255
+
         wild.append({
-            "name":         r["Pokemon"],
-            "level_range":  r["Level(s)"],
-            "enc_rate":     float(r["Encounter Rate"].strip("%")) / 100
+            "name":        r["Pokemon"],
+            "level_range": r["Level(s)"],
+            "enc_rate":    float(r["Encounter Rate"].strip("%")) / 100,
+            "catch_rate":  catch_rate,
+            "base_stat":   int(r["Total Base Stats"])
         })
 
     # Trainers grouped
@@ -224,13 +236,39 @@ def load_route_data(enc_csv, tr_csv):
 # Difficulty‐based Selectors
 # -----------------------------
 def select_wild(wild_list, diff):
-    if diff == 1:
-        pool = [w for w in wild_list if w["enc_rate"] >= 0.3]
-    elif diff == 2:
-        pool = [w for w in wild_list if 0.1 <= w["enc_rate"] < 0.3]
-    else:
-        pool = [w for w in wild_list if w["enc_rate"] < 0.1]
-    return random.choice(pool or wild_list)
+    """
+    Pick one wild Pokémon weighted by a difficulty metric that combines:
+      • Rarity   = 1 - enc_rate
+      • Catch-hardness = 1 - catch_rate
+      • Strength = base_stat / max_base_stat
+
+    Easy (diff=1)   → favors low-difficulty Pokémon by inverting the metric
+    Medium (diff=2) → uniform random
+    Hard (diff=3)   → favors high-difficulty Pokémon (higher metric)
+    """
+    # find max base stats for normalization
+    max_base = max(w["base_stat"] for w in wild_list) or 1
+
+    weights = []
+    for w in wild_list:
+        enc_score   = 1.0 - w["enc_rate"]
+        catch_score = 1.0 - w["catch_rate"]
+        base_score  = w["base_stat"] / max_base
+        metric = enc_score + catch_score + base_score
+
+        if diff == 1:
+            # easy: pick low-metric Pokémon
+            weight = 1.0 / (metric + 0.01)
+        elif diff == 2:
+            # medium: all equal
+            weight = 1.0
+        else:
+            # hard: pick high-metric Pokémon
+            weight = metric
+
+        weights.append(weight)
+
+    return random.choices(wild_list, weights=weights, k=1)[0]
 
 def select_trainer(tr_list, diff):
     if diff == 1:
@@ -308,14 +346,34 @@ def calculate_qds(graph, difficulty, wild_list, tr_list):
         1 for node in graph.nodes.values() 
         if node.optional or len(node.actions) > 1
     )
+
+    # --- new: gather all wild encounters in this quest ---
+    encountered = []
+    for node in graph.nodes.values():
+        for action in node.actions:
+            if action.startswith(("battle wild", "encounter wild", "find wild")):
+                # parse name
+                name = action.split()[2]
+                entry = next((w for w in wild_list if w["name"] == name), None)
+                if entry:
+                    encountered.append(entry)
+
+    if encountered:
+        avg_catch = sum(w["catch_rate"] for w in encountered) / len(encountered)
+        avg_base  = sum(w["base_stat"]  for w in encountered) / len(encountered)
+    else:
+        # fallback if no wild steps
+        avg_catch, avg_base = 0.5, 300
     
     # Calculate weighted score
     score = (
         QDS_WEIGHTS['difficulty'] * difficulty +
-        QDS_WEIGHTS['pokemon'] * pokemon_count +
-        QDS_WEIGHTS['steps'] * num_steps +
-        QDS_WEIGHTS['battles'] * (battle_strength / 50) +  # Normalized by dividing by 50
-        QDS_WEIGHTS['conditions'] * special_conds
+        QDS_WEIGHTS['pokemon']    * pokemon_count +
+        QDS_WEIGHTS['steps']      * num_steps +
+        QDS_WEIGHTS['battles']    * (battle_strength / 50) +
+        QDS_WEIGHTS['conditions'] * special_conds +
+        QDS_WEIGHTS['catch_rate'] * (1 - avg_catch) +
+        QDS_WEIGHTS['base_stats'] * (avg_base / 600)
     )
     
     # Scale to 0-100 range
@@ -349,7 +407,11 @@ def extract_quest_summary(graph, difficulty, wild_list, tr_list):
 # -----------------------------
 # Printing & Extraction
 # -----------------------------
-def print_actions(node, visited=None, prefix="", is_last=True):
+def print_actions(node, wild_list, visited=None, prefix="", is_last=True):
+    """
+    Recursively prints the quest graph, and for any wild-Pokémon actions,
+    appends (Lv range; Catch Rate X%; Base Stats Y).
+    """
     if visited is None:
         visited = set()
     if node.id in visited:
@@ -362,9 +424,23 @@ def print_actions(node, visited=None, prefix="", is_last=True):
 
     child_prefix = prefix + ("    " if is_last else "│   ")
     for action in node.actions:
-        print(child_prefix + f"• {action}")
+        # If this is a wild Pokemon action, augment with catch rate & base stat
+        if any(action.startswith(p) for p in ("battle wild", "encounter wild", "find wild")):
+            # extract name (3rd token)
+            name = action.split()[2]
+            entry = next((w for w in wild_list if w["name"] == name), None)
+            if entry:
+                detail = (f"(Lv {entry['level_range']}; "
+                          f"Catch Rate {int(entry['catch_rate']*100)}%; "
+                          f"Base Stats {entry['base_stat']})")
+                print(child_prefix + f"• {action} {detail}")
+            else:
+                print(child_prefix + f"• {action}")
+        else:
+            print(child_prefix + f"• {action}")
+
     for i, ch in enumerate(node.children):
-        print_actions(ch, visited, child_prefix, i == len(node.children) - 1)
+        print_actions(ch, wild_list, visited, child_prefix, i == len(node.children) - 1)
 
 def extract_main_nodes(graph):
     main, cur, vis = [], graph.start, set()
@@ -418,7 +494,7 @@ if __name__ == "__main__":
             quest = generate_dynamic_quest_structure()
             populate_quest(quest)
             instantiate_quest_actions(quest, args.difficulty, wild_list, tr_list)
-            print_actions(quest.start)
+            print_actions(quest.start, wild_list)
 
             skel = extract_quest_summary(quest, args.difficulty, wild_list, tr_list)
 
