@@ -205,12 +205,16 @@ def load_route_data(enc_csv, tr_csv):
         else:
             catch_rate = float(cr) / 255
 
+        # parse raw catch (0–255) and normalized fraction
+        raw_cr = int(r["Catch Rate"])
+        frac_cr = raw_cr / 255.0
         wild.append({
-            "name":        r["Pokemon"],
-            "level_range": r["Level(s)"],
-            "enc_rate":    float(r["Encounter Rate"].strip("%")) / 100,
-            "catch_rate":  catch_rate,
-            "base_stat":   int(r["Total Base Stats"])
+            "name":         r["Pokemon"],
+            "level_range":  r["Level(s)"],
+            "enc_rate":     float(r["Encounter Rate"].strip("%")) / 100,
+            "catch_rate":   frac_cr,
+            "catch_raw":    raw_cr,
+            "base_stat":    int(r["Total Base Stats"])
         })
 
     # Trainers grouped
@@ -426,12 +430,11 @@ def print_actions(node, wild_list, visited=None, prefix="", is_last=True):
     for action in node.actions:
         # If this is a wild Pokemon action, augment with catch rate & base stat
         if any(action.startswith(p) for p in ("battle wild", "encounter wild", "find wild")):
-            # extract name (3rd token)
             name = action.split()[2]
             entry = next((w for w in wild_list if w["name"] == name), None)
             if entry:
                 detail = (f"(Lv {entry['level_range']}; "
-                          f"Catch Rate {int(entry['catch_rate']*100)}%; "
+                          f"Catch {entry['catch_raw']}; "
                           f"Base Stats {entry['base_stat']})")
                 print(child_prefix + f"• {action} {detail}")
             else:
