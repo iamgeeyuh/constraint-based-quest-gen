@@ -366,12 +366,6 @@ def print_actions(node, visited=None, prefix="", is_last=True):
     for i, ch in enumerate(node.children):
         print_actions(ch, visited, child_prefix, i == len(node.children) - 1)
 
-def extract_quest_summary(graph):
-    starter = graph.start.actions[0] if graph.start.actions else ""
-    steps = [n.actions[0] for n in graph.nodes.values() if n.type == "step"]
-    comp  = [n.actions[0] for n in graph.nodes.values() if n.type == "completion"]
-    return {"starter": starter, "steps": steps, "completion": comp[0] if comp else ""}
-
 def extract_main_nodes(graph):
     main, cur, vis = [], graph.start, set()
     while cur and cur.id not in vis:
@@ -426,7 +420,7 @@ if __name__ == "__main__":
             instantiate_quest_actions(quest, args.difficulty, wild_list, tr_list)
             print_actions(quest.start)
 
-            skel = extract_quest_summary(quest)
+            skel = extract_quest_summary(quest, args.difficulty, wild_list, tr_list)
 
             # Print QDS information
             print(f"\nQuest Difficulty Score (QDS): {skel['qds']}/100")
