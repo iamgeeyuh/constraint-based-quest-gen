@@ -15,6 +15,14 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 MIN_MAIN_STEPS = MAX_MAIN_STEPS = SIDE_QUEST_CHANCE = DECISION_FORK_CHANCE = None
 MAX_TASKS_PER_NODE = 2
 
+QDS_WEIGHTS = {
+    'difficulty': 0.4,      # v - Base difficulty setting
+    'pokemon': 0.2,         # w - Number of Pokémon involved
+    'steps': 0.15,          # x - Number of quest steps
+    'battles': 0.15,        # y - Battle strength (sum of levels)
+    'conditions': 0.1       # z - Special conditions (optional steps, etc)
+}
+
 def configure_difficulty(difficulty: int):
     global MIN_MAIN_STEPS, MAX_MAIN_STEPS, SIDE_QUEST_CHANCE, DECISION_FORK_CHANCE, MAX_TASKS_PER_NODE
     if difficulty == 1:
@@ -259,6 +267,86 @@ def instantiate_quest_actions(graph, diff, wild_list, tr_list):
         ]
 
 # -----------------------------
+# Quest Difficulty Score
+# -----------------------------
+
+def calculate_qds(graph, difficulty, wild_list, tr_list):
+    """Calculate Quest Difficulty Score (QDS)"""
+    # Extract basic metrics
+    main_nodes = extract_main_nodes(graph)
+    num_steps = len(main_nodes)
+    
+    # Count Pokémon encounters
+    pokemon_count = sum(
+        1 for node in graph.nodes.values() 
+        if any("Pokemon" in a or "Pokémon" in a for a in node.actions)
+    )
+    
+    # Calculate battle strength
+    battle_strength = 0
+    for node in graph.nodes.values():
+        for action in node.actions:
+            if "battle" in action.lower():
+                if "wild" in action:
+                    # Extract wild Pokémon level (take max if range)
+                    level_str = action.split("Lv ")[1].split(")")[0]
+                    if "–" in level_str:
+                        level = int(level_str.split("–")[1])
+                    else:
+                        level = int(level_str)
+                    battle_strength += level
+                elif "Trainer" in action:
+                    # Sum all trainer Pokémon levels
+                    levels = [
+                        int(lv.split(")")[0]) 
+                        for lv in action.split("Lv ")[1:]
+                    ]
+                    battle_strength += sum(levels)
+    
+    # Count special conditions (optional nodes, complex tasks)
+    special_conds = sum(
+        1 for node in graph.nodes.values() 
+        if node.optional or len(node.actions) > 1
+    )
+    
+    # Calculate weighted score
+    score = (
+        QDS_WEIGHTS['difficulty'] * difficulty +
+        QDS_WEIGHTS['pokemon'] * pokemon_count +
+        QDS_WEIGHTS['steps'] * num_steps +
+        QDS_WEIGHTS['battles'] * (battle_strength / 50) +  # Normalized by dividing by 50
+        QDS_WEIGHTS['conditions'] * special_conds
+    )
+    
+    # Scale to 0-100 range
+    qds = min(100, max(0, int(score * 20)))
+    
+    return {
+        'qds': qds,
+        'components': {
+            'difficulty': difficulty,
+            'pokemon_count': pokemon_count,
+            'steps': num_steps,
+            'battle_strength': battle_strength,
+            'special_conditions': special_conds
+        }
+    }
+
+def extract_quest_summary(graph, difficulty, wild_list, tr_list):
+    starter = graph.start.actions[0] if graph.start.actions else ""
+    steps = [n.actions[0] for n in graph.nodes.values() if n.type == "step"]
+    comp = [n.actions[0] for n in graph.nodes.values() if n.type == "completion"]
+    qds_data = calculate_qds(graph, difficulty, wild_list, tr_list)
+    
+    return {
+        "starter": starter,
+        "steps": steps,
+        "completion": comp[0] if comp else "",
+        "qds": qds_data['qds'],
+        "qds_components": qds_data['components']
+    }
+
+# -----------------------------
 # Printing & Extraction
 # -----------------------------
 def print_actions(node, visited=None, prefix="", is_last=True):
@@ -339,6 +427,15 @@ if __name__ == "__main__":
             print_actions(quest.start)
 
             skel = extract_quest_summary(quest)
+
+            # Print QDS information
+            print(f"\nQuest Difficulty Score (QDS): {skel['qds']}/100")
+            print("Breakdown:")
+            print(f"- Base Difficulty: {args.difficulty}/3")
+            print(f"- Pokémon Encounters: {skel['qds_components']['pokemon_count']}")
+            print(f"- Steps: {skel['qds_components']['steps']}")
+            print(f"- Battle Strength: {skel['qds_components']['battle_strength']} (total levels)")
+            print(f"- Special Conditions: {skel['qds_components']['special_conditions']}")
 
             main_nodes = extract_main_nodes(quest)
             for idx, node in enumerate(main_nodes):
