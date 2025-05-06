@@ -48,15 +48,25 @@ We recommend mapping **W**, **S**, **A**, **D** to **X**, **B**, **Y**, **A**, a
 
 ---
 
-## 📦 Loading a Game (ROM)
+## 🎮 Playing our HGSS ROM
 
-1. Go to **File > Open ROM**.
-2. Navigate to your `.nds` ROM file and open it.
-3. The game should start running immediately.
+This repository includes a sample `CQGv1.1.0.nds` ROM file for testing and gameplay.
 
-> ⚠️ Note: Only use ROMs of games you legally own.
+### Steps:
 
----
+1. Download the ROM file:
+   - Go to the [Releases](./releases) section or browse the repository files.
+   - Download the file named `CQGv1.1.0.nds` (or whatever the most recent version is).
+
+2. Open the game in melonDS:
+   - Launch the emulator.
+   - Go to **File > Open ROM**.
+   - Select the downloaded `.nds` file.
+   - The game should start running immediately.
+
+> ⚠️ **Legal Notice**: The included ROM is provided with permission and is intended only for demonstration or educational use. Do not redistribute or use ROMs you do not have the legal rights to.
+
+
 
 
 Happy gaming! 🎉
