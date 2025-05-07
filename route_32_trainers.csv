@@ -1,18 +1,38 @@
-Game,Trainer Name,Pokemon,Level(s)
-Gen II,Youngster Albert,Rattata,6
-Gen II,Youngster Albert,Zubat,8
-Gen II,Youngster Gordon,Wooper,10
-Gen II,Fisherman Justin,Magikarp ×3,5
-Gen II,Fisherman Ralph,Goldeen,10
-Gen II,Fisherman Henry,Poliwag,8
-Gen II,Fisherman Henry,Goldeen,8
-Gen II,Hiker Anthony,Geodude,11
-Gen IV,Youngster Albert,Rattata,6
-Gen IV,Youngster Albert,Zubat,8
-Gen IV,Youngster Gordon,Wooper,10
-Gen IV,Fisherman Justin,Magikarp ×3,5
-Gen IV,Fisherman Ralph,Goldeen,10
-Gen IV,Fisherman Henry,Poliwag,8
-Gen IV,Fisherman Henry,Goldeen,8
-Gen IV,Hiker Anthony,Geodude,11
-Gen IV,Pokéfan Brandon,Mareep,10
+Game,Location,Method,Time,Pokemon,Level(s),Encounter Rate,Catch Rate,Total Base Stats
+Gen IV,Route 29,Grass,Walking,Morning,Pidgey,2–4,30%,255,251
+Gen IV,Route 29,Grass,Walking,Morning,Sentret,2–3,15%,255,215
+Gen IV,Route 29,Grass,Walking,Morning,Hoothoot,2–4,5%,255,262
+Gen IV,Route 29,Grass,Walking,Morning,Rattata,2–4,50%,255,253
+Gen IV,Route 29,Grass,Walking,Day,Pidgey,2–4,30%,255,251
+Gen IV,Route 29,Grass,Walking,Day,Sentret,2–3,15%,255,215
+Gen IV,Route 29,Grass,Walking,Day,Hoothoot,2–4,5%,255,262
+Gen IV,Route 29,Grass,Walking,Day,Rattata,2–4,50%,255,253
+Gen IV,Route 29,Grass,Walking,Night,Hoothoot,2–4,50%,255,262
+Gen IV,Route 29,Grass,Walking,Night,Rattata,2–4,30%,255,253
+Gen IV,Route 29,Grass,Walking,Night,Sentret,2–3,15%,255,215
+Gen IV,Route 29,Grass,Walking,Night,Pidgey,2–4,5%,255,251
+Gen IV,Route 29,Trees,Headbutt,Any,Exeggcute,2–25,Varies,90,325
+Gen IV,Route 29,Trees,Headbutt,Any,Hoothoot,2–19,Varies,255,262
+Gen IV,Route 29,Trees,Headbutt,Any,Ledyba,3–7,Varies,255,265
+Gen IV,Route 29,Trees,Headbutt,Any,Spinarak,3–7,Varies,255,250
+Gen IV,Route 29,Trees,Headbutt,Any,Pineco,2–17,Varies,190,290
+Gen IV,Route 30,Grass,Walking,Morning,Caterpie,3–4,50%,255,195
+Gen IV,Route 30,Grass,Walking,Morning,Pidgey,2–4,30%,255,251
+Gen IV,Route 30,Grass,Walking,Morning,Metapod,4,10%,120,205
+Gen IV,Route 30,Grass,Walking,Night,Spinarak,3–4,50%,255,250
+Gen IV,Route 30,Grass,Walking,Night,Hoothoot,2–4,30%,255,262
+Gen IV,Route 30,Grass,Walking,Night,Zubat,4,10%,255,245
+Gen IV,Route 30,Water,Surfing,Any,Poliwag,10–25,90%,255,300
+Gen IV,Route 30,Water,Surfing,Any,Poliwhirl,15–32,10%,120,385
+Gen IV,Route 30,Water,Fishing (Old Rod),Any,Magikarp,10,85%,255,200
+Gen IV,Route 30,Water,Fishing (Old Rod),Any,Poliwag,10,15%,255,300
+Gen IV,Route 30,Water,Fishing (Good Rod),Any,Poliwag,20,65%,255,300
+Gen IV,Route 30,Water,Fishing (Good Rod),Any,Magikarp,20,35%,255,200
+Gen IV,Route 30,Water,Fishing (Super Rod),Any,Poliwag,40,60%,255,300
+Gen IV,Route 30,Water,Fishing (Super Rod),Any,Poliwhirl,40,30%,120,385
+Gen IV,Route 30,Water,Fishing (Super Rod),Any,Magikarp,40,10%,255,200
+Gen IV,Route 30,Trees,Headbutt,Any,Exeggcute,2–25,Varies,90,325
+Gen IV,Route 30,Trees,Headbutt,Any,Hoothoot,2–19,Varies,255,262
+Gen IV,Route 30,Trees,Headbutt,Any,Ledyba,3–7,Varies,255,265
+Gen IV,Route 30,Trees,Headbutt,Any,Spinarak,3–7,Varies,255,250
+Gen IV,Route 30,Trees,Headbutt,Any,Pineco,2–17,Varies,190,290

@@ -15,15 +15,19 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 MIN_MAIN_STEPS = MAX_MAIN_STEPS = SIDE_QUEST_CHANCE = DECISION_FORK_CHANCE = None
 MAX_TASKS_PER_NODE = 2
 
+# Constants
 QDS_WEIGHTS = {
-    'difficulty': 0.3,      # v - Base difficulty setting
-    'pokemon':    0.15,     # w - Number of Pokémon involved
-    'steps':      0.1,      # x - Number of quest steps
-    'battles':    0.1,      # y - Battle strength (sum of levels)
-    'conditions': 0.05,     # z - Special conditions (optional steps, etc)
-    'catch_rate': 0.15,     # new – average (1 – catch_rate)
-    'base_stats': 0.15      # new – average base stats normalized
+    'pokemon': 0.15,      # Number of Pokémon
+    'steps': 0.10,        # Number of quest steps
+    'battles': 0.10,      # Sum of enemy levels
+    'conditions': 0.05,   # Special conditions (e.g., optional steps)
+    'catch_rate': 0.40,   # 1 - (catch_rate / 255)
+    'base_stats': 0.20    # Normalized BST (Base Stat Total)
 }
+
+# Min/Max BST for normalization (adjust based on your game's Pokémon)
+MIN_BST = 200    # e.g., Magikarp
+MAX_BST = 680    # e.g., Mewtwo
 
 def configure_difficulty(difficulty: int):
     global MIN_MAIN_STEPS, MAX_MAIN_STEPS, SIDE_QUEST_CHANCE, DECISION_FORK_CHANCE, MAX_TASKS_PER_NODE
@@ -311,102 +315,111 @@ def instantiate_quest_actions(graph, diff, wild_list, tr_list):
 # -----------------------------
 # Quest Difficulty Score
 # -----------------------------
+def calculate_qds(quest_data, difficulty):
+    """
+    Calculate QDS using original weights and light difficulty scaling at the end.
+    This keeps natural structure-based scoring, but with consistent upward bias.
+    """
 
-def calculate_qds(graph, difficulty, wild_list, tr_list):
-    """Calculate Quest Difficulty Score (QDS)"""
-    # Extract basic metrics
-    main_nodes = extract_main_nodes(graph)
-    num_steps = len(main_nodes)
-    
-    # Count Pokémon encounters
-    pokemon_count = sum(
-        1 for node in graph.nodes.values() 
-        if any("Pokemon" in a or "Pokémon" in a for a in node.actions)
-    )
-    
-    # Calculate battle strength
-    battle_strength = 0
-    for node in graph.nodes.values():
-        for action in node.actions:
-            if "battle" in action.lower():
-                if "wild" in action:
-                    # Extract wild Pokémon level (take max if range)
-                    level_str = action.split("Lv ")[1].split(")")[0]
-                    if "–" in level_str:
-                        level = int(level_str.split("–")[1])
-                    else:
-                        level = int(level_str)
-                    battle_strength += level
-                elif "Trainer" in action:
-                    # Sum all trainer Pokémon levels
-                    levels = [
-                        int(lv.split(")")[0]) 
-                        for lv in action.split("Lv ")[1:]
-                    ]
-                    battle_strength += sum(levels)
-    
-    # Count special conditions (optional nodes, complex tasks)
-    special_conds = sum(
-        1 for node in graph.nodes.values() 
-        if node.optional or len(node.actions) > 1
-    )
+    # Light difficulty scaling (final boost only)
+    difficulty_boost = {
+        1: 0.9,
+        2: 1.0,
+        3: 1.15  # NOT 1.3 — that was too much
+    }[difficulty]
 
-    # --- new: gather all wild encounters in this quest ---
-    encountered = []
-    for node in graph.nodes.values():
-        for action in node.actions:
-            if action.startswith(("battle wild", "encounter wild", "find wild")):
-                # parse name
-                name = action.split()[2]
-                entry = next((w for w in wild_list if w["name"] == name), None)
-                if entry:
-                    encountered.append(entry)
-
-    if encountered:
-        avg_catch = sum(w["catch_rate"] for w in encountered) / len(encountered)
-        avg_base  = sum(w["base_stat"]  for w in encountered) / len(encountered)
+    # Normalize catch rate
+    if not quest_data['catch_rate']:
+        avg_catch_rate = 0
     else:
-        # fallback if no wild steps
-        avg_catch, avg_base = 0.5, 300
-    
-    # Calculate weighted score
-    score = (
-        QDS_WEIGHTS['difficulty'] * difficulty +
-        QDS_WEIGHTS['pokemon']    * pokemon_count +
-        QDS_WEIGHTS['steps']      * num_steps +
-        QDS_WEIGHTS['battles']    * (battle_strength / 50) +
-        QDS_WEIGHTS['conditions'] * special_conds +
-        QDS_WEIGHTS['catch_rate'] * (1 - avg_catch) +
-        QDS_WEIGHTS['base_stats'] * (avg_base / 600)
-    )
-    
-    # Scale to 0-100 range
-    qds = min(100, max(0, int(score * 20)))
-    
-    return {
-        'qds': qds,
-        'components': {
-            'difficulty': difficulty,
-            'pokemon_count': pokemon_count,
-            'steps': num_steps,
-            'battle_strength': battle_strength,
-            'special_conditions': special_conds
-        }
+        catch_rates = [1 - (rate / 255) for rate in quest_data['catch_rate']]
+        avg_catch_rate = sum(catch_rates) / len(catch_rates)
+
+    # Normalize base stats
+    if not quest_data['base_stats']:
+        avg_base_stats = 0
+    else:
+        base_stats_normalized = [
+            (bst - MIN_BST) / (MAX_BST - MIN_BST)
+            for bst in quest_data['base_stats']
+        ]
+        avg_base_stats = sum(base_stats_normalized) / len(base_stats_normalized)
+
+    # Original weights applied to normalized components
+    components = {
+        'pokemon': QDS_WEIGHTS['pokemon'] * min(quest_data['pokemon'], 10) / 10,
+        'steps': QDS_WEIGHTS['steps'] * min(quest_data['steps'], 10) / 10,
+        'battles': QDS_WEIGHTS['battles'] * min(quest_data['battles'], 50) / 50,
+        'conditions': QDS_WEIGHTS['conditions'] * min(quest_data['conditions'], 5) / 5,
+        'catch_rate': QDS_WEIGHTS['catch_rate'] * avg_catch_rate,
+        'base_stats': QDS_WEIGHTS['base_stats'] * avg_base_stats,
     }
+
+    # Final QDS with difficulty bias
+    raw_score = sum(components.values())
+    qds = min(raw_score * 100 * difficulty_boost, 100)
+
+    return {
+        'qds': round(qds, 1),
+        'components': components
+    }
+
+
 
 def extract_quest_summary(graph, difficulty, wild_list, tr_list):
     starter = graph.start.actions[0] if graph.start.actions else ""
     steps = [n.actions[0] for n in graph.nodes.values() if n.type == "step"]
     comp = [n.actions[0] for n in graph.nodes.values() if n.type == "completion"]
-    qds_data = calculate_qds(graph, difficulty, wild_list, tr_list)
-    
+
+    # Track only used Pokémon and trainers
+    used_pokemon_names = set()
+    used_trainer_names = set()
+    for node in graph.nodes.values():
+        for action in node.actions:
+            if "wild" in action:
+                parts = action.split()
+                if len(parts) >= 3:
+                    used_pokemon_names.add(parts[2])
+            elif "Trainer" in action:
+                parts = action.split()
+                if "Trainer" in parts:
+                    idx = parts.index("Trainer")
+                    if idx + 1 < len(parts):
+                        used_trainer_names.add(parts[idx + 1])
+
+    used_wilds = [w for w in wild_list if w["name"] in used_pokemon_names]
+    used_trainers = [t for t in tr_list if t["name"] in used_trainer_names]
+
+    qds_input = {
+        'pokemon': len(used_wilds) + sum(len(t['pokemons']) for t in used_trainers),
+        'steps': len(steps),
+        'battles': sum(sum(t['levels']) for t in used_trainers),
+        'conditions': len([n for n in graph.nodes.values() if n.optional]),
+        'catch_rate': [w['catch_raw'] for w in used_wilds],
+        'base_stats': (
+            [w['base_stat'] for w in used_wilds] +
+            [w['base_stat'] for t in used_trainers for w in used_wilds if w['name'] in t['pokemons']]
+        ),
+    }
+
+    qds_data = calculate_qds(qds_input, difficulty)
+    avg_catch_difficulty = qds_data['components']['catch_rate'] / QDS_WEIGHTS['catch_rate']
+
     return {
         "starter": starter,
         "steps": steps,
         "completion": comp[0] if comp else "",
-        "qds": qds_data['qds'],
-        "qds_components": qds_data['components']
+        "qds": qds_data['qds'],  # ✅ no double-scaling
+        "qds_components": {
+            'pokemon_count': qds_input['pokemon'],
+            'steps': len(steps),
+            'battle_strength': qds_input['battles'],
+            'special_conditions': qds_input['conditions'],
+            'avg_catch_difficulty': round(avg_catch_difficulty * 100, 1),
+            'avg_base_stats': round((qds_data['components']['base_stats'] / QDS_WEIGHTS['base_stats']) * 100, 1)
+        }
     }
+
 
 # -----------------------------
 # Printing & Extraction
@@ -468,11 +481,11 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--encounters",
-        default="route_32_encounters.csv"
+        default="route_29_encounters.csv"
     )
     parser.add_argument(
         "--trainers",
-        default="route_32_trainers.csv"
+        default="route_29_trainers.csv"
     )
     args = parser.parse_args()
 
@@ -509,6 +522,8 @@ if __name__ == "__main__":
             print(f"- Steps: {skel['qds_components']['steps']}")
             print(f"- Battle Strength: {skel['qds_components']['battle_strength']} (total levels)")
             print(f"- Special Conditions: {skel['qds_components']['special_conditions']}")
+            print(f"- Avg Catch Difficulty: {skel['qds_components']['avg_catch_difficulty']}%")
+            print(f"- Avg Base Stats: {skel['qds_components']['avg_base_stats']}%")
 
             main_nodes = extract_main_nodes(quest)
             for idx, node in enumerate(main_nodes):
