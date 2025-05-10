@@ -56,7 +56,7 @@ This repository includes a sample `CQGv1.1.0.nds` ROM file for testing and gamep
 
 1. Download the ROM file:
    - Go to the [Releases](./releases) section or browse the repository files.
-   - Download the file named `CQGv1.1.0.nds` (or whatever the most recent version is).
+   - Download the file named `CQGv1.2.0.nds`
 
 2. Open the game in melonDS:
    - Launch the emulator.
