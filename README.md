@@ -44,13 +44,14 @@ You can customize the control bindings to match your preferred input device (key
 5. Repeat this process for all controls, including touch screen and hotkeys.
 6. Click **OK** to save your settings.
 
-We recommend mapping **W**, **S**, **A**, **D** to **X**, **B**, **Y**, **A**, and the directional pad to your arrow keys. 
+We recommend mapping **W**, **S**, **A**, **D** to **X**, **B**, **Y**, **A**, and the directional pad to your arrow keys.
+
 
 ---
 
 ## 🎮 Playing our HGSS ROM
 
-This repository includes a sample `CQGv1.1.0.nds` ROM file for testing and gameplay.
+This repository includes a sample `CQGv1.2.0.nds` ROM file for testing and gameplay.
 
 ### Steps:
 
